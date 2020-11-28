@@ -46,7 +46,6 @@ $(document).ready(function(){
 	$("#formularioAlta").submit(function(e){
 
 		e.preventDefault();
-		formData = new FormData($(this)[0]);
 
 	}).validate({
 		rules:{
@@ -125,7 +124,7 @@ $(document).ready(function(){
 
 			// LLAMAMOS A LA FUNCIÓN SELECCIONAR TECNICOS LA CUAL ASIGNA 
 			// LA INCIDENCIA Y ENVIA EMAIL
-			seleccionarTecnicos(codigoCliente, codigoSolicitante,formData);
+			seleccionarTecnicos(codigoCliente, codigoSolicitante);
 	    }
 	});
 
@@ -962,7 +961,7 @@ function checkActivos(){
 
 // FUNCIÓN PARA DETECTAR LOS CHECKBOX DE LOS TÉCNICOS SELECCIONADOS PARA ENVIAR EMAIL SOLO A ESOS TÉCNICOS.
 
-function seleccionarTecnicos(codigoCliente, codigoSolicitante, formData){
+function seleccionarTecnicos(codigoCliente, codigoSolicitante){
 
 
 	var contador = 0;
@@ -1010,25 +1009,21 @@ function seleccionarTecnicos(codigoCliente, codigoSolicitante, formData){
 		var asunto = $("#asunto").val();
 		var mensaje = $("#cuerpoMensaje").val();
 		var token = $("#token").val();
-		var uploadedFiles = document.getElementById("#adjunto");
-		var formData = new FormData();
-		
-		for(let i = 0; i < uploadedFiles.files.length; i++) {
-		    formData.append('adjunto', uploadedFiles.files[i]);
-		}
+		var archivo = $('input[type="file"]')[0];
+		var nombreArchivo = $("#adjunto").val();
+		var datosFormulario = new FormData();
 
-		formData.append('fechaSolicitud', fechaSolicitud);
-		formData.append('categoria', categoria);
-		formData.append('prioridad', prioridad);
-		formData.append('asunto', asunto);
-		formData.append('mensaje', mensaje);
-		formData.append('solicitante', codigoSolicitante);
-		formData.append('cliente', codigoCliente);
-		formData.append('tecnico', tecnicoSeleccionado);
-		formData.append('telefono', telefono);
+		datosFormulario.append('adjunto[]', archivo);
+		datosFormulario.append('fechaSolicitud', fechaSolicitud);
+		datosFormulario.append('categoria', categoria);
+		datosFormulario.append('prioridad', prioridad);
+		datosFormulario.append('asunto', asunto);
+		datosFormulario.append('mensaje', mensaje);
+		datosFormulario.append('solicitante', codigoSolicitante);
+		datosFormulario.append('cliente', codigoCliente);
+		datosFormulario.append('tecnico', tecnicoSeleccionado);
+		datosFormulario.append('telefono', telefono);
 
-
-		console.log(formData.data);
 
 		$.ajax({
 			url: "/setIncidencia",
@@ -1037,12 +1032,13 @@ function seleccionarTecnicos(codigoCliente, codigoSolicitante, formData){
 			contentType: false,
             processData: false,   
             cache: false, 
-			data: formData,
+			data: datosFormulario,
 			success: function(data){
 				$("#correcto").show();
 	    		$("#correcto").append("Incidencia Generada");
 
-	    		//console.log(data);
+	    		console.log(data);
+	    		console.log(datosFormulario);
 
 				//UNA VEZ CREADA LA INCIDENCIA ENVIAMOS EL EMAIL DESDE EL CONTROLADOR Y REDIRECCIONAMOS A:
 	    		//window.location.href = "/home";
@@ -1056,6 +1052,7 @@ function seleccionarTecnicos(codigoCliente, codigoSolicitante, formData){
 		});	
 
 	}// fin if
+
 
 	// SI SELECCIONAMOS VARIOS TECNICOS
 	if(contador > 1){
