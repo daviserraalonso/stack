@@ -35,32 +35,33 @@ class Incidencias extends Controller{
 
 	public function setIncidenciaPost(Request $request){
 
-        //Get the array of uploaded files from request data or initialise as empty array
-        $uploadedFile = $request->input('adjunto', []);
 
-        $filename = [];
+        $uploadedFile = "";
+        $filename = "";
 
 
-        if(count($uploadedFile)){
+        // bloque para adjuntar fichero al email al abrirIncidencia
 
+
+        if($request->file('file') != ""){
+
+            $uploadedFile = $request->file('file');
             $destino = public_path().'/subidas';
 
-            for($i=0; $i<count($uploadedFile); $i++){
-                //Validate the uploaded file
-                // $uploadedFile[0]->isValid();
+            for($i = 0; $i < count($uploadedFile); $i++){
+                $filename = $uploadedFile[$i]->getClientOriginalName();
 
-                //Get the original filename of uploaded file
-                $filename[] = $fname = $uploadedFile[$i]->getClientOriginalName();
-
-                //Store the file
-                $uploadedFile[$i]->move();
+                $uploadedFile[$i]->move($destino, $filename);
             }
+
+
             
         }
 
+        echo var_dump($request->all());
 
+        exit();
 
-    
 
     	$resultado = \DB::table('incidencias')->insert([
                     				                     'fecha_solicitud' => $request["fechaSolicitud"],
@@ -73,7 +74,7 @@ class Incidencias extends Controller{
                     							                  'asunto' => $request["asunto"],
                     							                  'cuerpo' => $request["mensaje"],
                                                                  'cliente' => $request["cliente"],
-                                                                 'adjunto' => implode(',', $filename)
+                                                                 'adjunto' => $filename
                                                         ]);
 
         $idIncidencia = \DB::getPdo()->lastInsertId();
